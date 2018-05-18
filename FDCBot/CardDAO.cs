@@ -17,10 +17,10 @@ namespace FDCBot
               //  if(connection == null)
              //   {
                     SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                    builder.DataSource = "fdchackathon.database.windows.net";
-                    builder.UserID = "hackadmin";
-                    builder.Password = "H@ckathon";
-                    builder.InitialCatalog = "carddb";
+                    builder.DataSource = "<enter_server>.database.windows.net";
+                    builder.UserID = "<enter_user_name>";
+                    builder.Password = "enter_password";
+                    builder.InitialCatalog = "enter_db";
                     connection = new SqlConnection(builder.ConnectionString);
             //    }
                 return connection;
