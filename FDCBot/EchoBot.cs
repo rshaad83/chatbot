@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Bot;
@@ -11,6 +11,7 @@ namespace FDCBot
 {
     public class EchoBot : IBot
     {
+        // TODO: Use conversation state instead
         static string lastFourDigitsOfCard = "";
         static string cvv = "";
         static string lastFourDigitsOfSSN = "";
@@ -67,8 +68,6 @@ namespace FDCBot
                         // Prompt for the card activity.
                         await dc.Prompt("operationPrompt","Do you want to activate or deactivate your card?");
                     },
-                   
-                   
                     async(dc, args, next) =>
                     {
                         operation = (string) args["Text"];
@@ -91,7 +90,6 @@ namespace FDCBot
                             await dc.Prompt("verificationPrompt", "We found Your card ending with " + lastFourDigitsOfCard + 
                                 ". Please enter the card verification/cvv number");
                         }
-
                     },
 
                     async (dc, args, next) =>
@@ -99,7 +97,6 @@ namespace FDCBot
                         cvv = (string) args["Text"];
 
                         Boolean validCvv = verifyCvvForCard(lastFourDigitsOfCard, cvv);
-
                         if(!validCvv)
                         {
                             // show message
@@ -110,9 +107,7 @@ namespace FDCBot
                             await dc.Prompt("ssnPrompt", $"Found verification number '{cvv}' for card ending with '{lastFourDigitsOfCard}'. " +
                                 $"Please enter last four digits of your social security number");
                         }
-
                     },
-
                     async (dc, args, next) =>
                     {
                         lastFourDigitsOfSSN = (string) args["Text"];
@@ -124,87 +119,63 @@ namespace FDCBot
                             // show message
                             await dc.Prompt("activationPrompt", $"Sorry, the SSN '{lastFourDigitsOfSSN}' not found for the card. Please verify and try again");
                         }
-                        else {
-
+                        else
+                        {
                             Boolean activated = activateCard(lastFourDigitsOfCard);
-
                             if(activated)
                             {
                                  await dc.Prompt("activationPrompt", $"Card ending with '{lastFourDigitsOfCard}' successfully activated. Thank You for using our bot service !!!");
                             }
                             else
                             {
-                            // Prompt for the card verification code
-                            await dc.Prompt("activationPrompt", $"Sorry, there was an error activating card ending with '{lastFourDigitsOfCard}'. " +
+                                // Prompt for the card verification code
+                                await dc.Prompt("activationPrompt", $"Sorry, there was an error activating card ending with '{lastFourDigitsOfCard}'. " +
                                 $"Please call us");
                             }
                         }
-
                     }
-
-
-
-
                 });
 
+                // add all prompts to dialog set
                 dialogs.Add("operationPrompt", new TextPrompt());
                 dialogs.Add("cardNumberPrompt", new TextPrompt());
                 dialogs.Add("verificationPrompt", new TextPrompt());
                 dialogs.Add("ssnPrompt", new TextPrompt());
                 dialogs.Add("activationPrompt", new TextPrompt());
 
-
-
+                // create dialogs
                 await createAndBeginDialogs(context, dialogs);
-
-                // Echo back to the user whatever they typed.
-                // await context.SendActivity($"Turn {state.TurnCount}: You sent '{context.Activity.Text}'");
             }
         }
 
         private static async Task createAndBeginDialogs(ITurnContext context, DialogSet dialogs)
         {
             var dialogContext = dialogs.CreateContext(context, context.GetConversationState<EchoState>());
-            // await dialogContext.Begin("firstRun");
-             
             await dialogContext.Continue();
-
             if (!context.Responded)
             {
                 await dialogContext.Begin("firstRun");
             }
-            
         }
 
         private Boolean verifyCardNumber(string lastFourDigitsOfCard)
         {
-            Boolean doesCardExist = CardDAO.isValidCard(lastFourDigitsOfCard);
-
-            return doesCardExist;
-
+            return CardDAO.isValidCard(lastFourDigitsOfCard);
         }
 
         private Boolean verifyCvvForCard(string lastFourDigitsOfCard, string cvv)
         {
-            Boolean validCvvForCard = CardDAO.isValidCvvForCard(lastFourDigitsOfCard, cvv);
-
-            return validCvvForCard;
-
+            return CardDAO.isValidCvvForCard(lastFourDigitsOfCard, cvv);
         }
 
         private Boolean verifySsnForCard(string lastFourDigitsOfCard, string cvv, string ssn)
         {
-            Boolean validCvvForCard = CardDAO.isValidSsnForCard(lastFourDigitsOfCard, cvv, ssn);
-
-            return validCvvForCard;
-
+            return CardDAO.isValidSsnForCard(lastFourDigitsOfCard, cvv, ssn);
         }
 
         private bool activateCard(string lastFourDigitsOfCard)
         {
-            Boolean validCvvForCard = CardDAO.activateCard(lastFourDigitsOfCard);
-
-            return validCvvForCard;
+           return CardDAO.activateCard(lastFourDigitsOfCard);
         }
 
     }    
