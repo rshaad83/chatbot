@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -14,19 +14,20 @@ namespace FDCBot
 
         private static SqlConnection GetConnection()
         {
-              //  if(connection == null)
-             //   {
-                    SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                    builder.DataSource = "<enter_server>.database.windows.net";
-                    builder.UserID = "<enter_user_name>";
-                    builder.Password = "enter_password";
-                    builder.InitialCatalog = "enter_db";
-                    connection = new SqlConnection(builder.ConnectionString);
-            //    }
-                return connection;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "fdchackathon.database.windows.net";
+            builder.UserID = "hackadmin";
+            builder.Password = "H@ckathon";
+            builder.InitialCatalog = "carddb";
+            connection = new SqlConnection(builder.ConnectionString);
+         
+            return connection;
+
         }
 
-
+        /*
+         * Checks against the database that  the last four digits of the card are valid
+         */
         public static Boolean isValidCard(String lastFourDigits)
         {
             Boolean cardExists = false;
@@ -66,6 +67,9 @@ namespace FDCBot
             return cardExists;
         }
         
+        /*
+         * Checks against the database that the CVV is valid for the card supplied
+         */
         public static Boolean isValidCvvForCard(String lastFourDigitsOfCard, String cvv)
         {
             Boolean validCvvForCard = false;
@@ -107,9 +111,11 @@ namespace FDCBot
             return validCvvForCard;
         }
 
+        /*
+         * Checks against the database that the supplied SSN is valid for the card, and cvv
+         */
         public static Boolean isValidSsnForCard(string lastFourDigitsOfCard, string cvv, string ssn)
         {
-
             Boolean validSsnForCard = false;
             try
             {
@@ -149,13 +155,40 @@ namespace FDCBot
             return validSsnForCard;
         }
 
+        /*
+         * update the status of the card to Activated in database
+         */ 
         public static Boolean activateCard(string lastFourDigitsOfCard)
         {
-            return true;
+            Boolean cardActivated = false;
+            try
+            {
+                using (SqlConnection connection = GetConnection())
+                {
+                    connection.Open();
+                    String query = "UPDATE [dbo].[Card_Info] SET Active = 'Y' where Card_Last_Four_Digits = '" + lastFourDigitsOfCard + "'";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        int updateCount = command.ExecuteNonQuery();
+                        if(updateCount > 0)
+                        {
+                            cardActivated = true;
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    connection.Close();
+                }
+            }
+            return cardActivated;
         }
     }
-
-
-
-
 }
