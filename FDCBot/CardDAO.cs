@@ -17,7 +17,7 @@ namespace FDCBot
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "fdchackathon.database.windows.net";
             builder.UserID = "hackadmin";
-            builder.Password = "H@ckathon";
+            builder.Password = "<enter_password>";
             builder.InitialCatalog = "carddb";
             connection = new SqlConnection(builder.ConnectionString);
          
